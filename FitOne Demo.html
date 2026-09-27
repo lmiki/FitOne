@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FitOne - דמו</title>
+<style>
+:root{
+  --bg:#f3f1ea; --card:#ffffff; --text:#1a1a18; --text2:#6b6a63; --text3:#9a9990;
+  --accent:#4b3f9e; --accent-bg:#eeedfb; --accent-text:#3c3489;
+  --border:rgba(0,0,0,0.08); --success:#1d9e75; --success-bg:#e1f5ee;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151513; --card:#201f1c; --text:#f2f1ec; --text2:#a8a79f; --text3:#78776f;
+    --accent:#7f77dd; --accent-bg:#26215c; --accent-text:#cecbf6;
+    --border:rgba(255,255,255,0.1); --success:#5dcaa5; --success-bg:#04342c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151513; --card:#201f1c; --text:#f2f1ec; --text2:#a8a79f; --text3:#78776f;
+  --accent:#7f77dd; --accent-bg:#26215c; --accent-text:#cecbf6;
+  --border:rgba(255,255,255,0.1); --success:#5dcaa5; --success-bg:#04342c;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:var(--text);}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+.phone{max-width:400px;margin:20px auto;background:var(--card);border-radius:28px;border:1px solid var(--border);overflow:hidden;min-height:760px;display:flex;flex-direction:column;position:relative;}
+.statusbar{display:flex;justify-content:space-between;padding:10px 20px 4px;font-size:12px;color:var(--text2);}
+.screen{flex:1;overflow-y:auto;padding:8px 16px 90px;display:none;}
+.screen.active{display:block;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.loc{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:5px;}
+h1{font-size:19px;font-weight:600;margin:6px 0 12px;}
+h2{font-size:15px;font-weight:600;margin:16px 0 8px;}
+.quota{background:var(--accent-bg);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.quota .lbl{font-size:12px;color:var(--accent-text);}
+.quota .val{font-size:13px;font-weight:600;color:var(--accent-text);margin-top:2px;}
+.ring{width:42px;height:42px;border-radius:50%;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent-text);flex-shrink:0;}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px;}
+.chip{white-space:nowrap;padding:7px 16px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text);}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.card .name{font-size:14px;font-weight:600;}
+.card .meta{font-size:12px;color:var(--text2);margin-top:3px;}
+.btn{border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn.primary{background:var(--accent);color:#fff;}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn.danger{background:transparent;border:1px solid var(--border);color:#c0392b;}
+.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--border);}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;}
+.tab.active{color:var(--accent);}
+.tab .ic{font-size:20px;line-height:1;}
+.plan{border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;}
+.plan.featured{border:2px solid var(--accent);}
+.badge{position:absolute;top:-10px;right:16px;background:var(--accent);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;}
+.plan .price{font-size:22px;font-weight:700;margin:6px 0;}
+.plan ul{margin:8px 0 0;padding-inline-start:18px;font-size:13px;color:var(--text2);line-height:1.8;}
+.avatar{width:52px;height:52px;border-radius:50%;background:var(--accent-bg);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;}
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--success);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.empty{text-align:center;color:var(--text2);font-size:13px;padding:40px 10px;}
+.row{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);}
+.row:last-child{border:none;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>FitOne · דמו</span></div>
+
+  <!-- HOME -->
+  <div class="screen active" id="home">
+    <div class="topbar">
+      <div class="loc">📍 תל אביב, פלורנטין</div>
+    </div>
+    <h1>בוקר טוב, נועה</h1>
+    <div class="quota">
+      <div>
+        <div class="lbl">מכסה חודשית · תוכנית Active</div>
+        <div class="val" id="quotaText">נשארו לך 5 מתוך 8 פעילויות</div>
+      </div>
+      <div class="ring" id="quotaRing">5/8</div>
+    </div>
+    <div class="chips">
+      <button class="chip on" onclick="filterChip(this)">הכל</button>
+      <button class="chip" onclick="filterChip(this)">יוגה</button>
+      <button class="chip" onclick="filterChip(this)">חדר כושר</button>
+      <button class="chip" onclick="filterChip(this)">פילאטיס</button>
+    </div>
+    <h2>זמין עכשיו לידך</h2>
+    <div id="activityList"></div>
+  </div>
+
+  <!-- MY BOOKINGS -->
+  <div class="screen" id="bookings">
+    <h1>הפעילויות שלי</h1>
+    <div id="bookingList"></div>
+  </div>
+
+  <!-- PLANS -->
+  <div class="screen" id="plans">
+    <h1>מסלולי מנוי</h1>
+    <div class="plan">
+      <div class="price">₪99 <span style="font-size:12px;color:var(--text2);font-weight:400;">/חודש</span></div>
+      <div style="font-weight:600;">Starter</div>
+      <ul><li>4 פעילויות בחודש</li><li>גישה לכל הספקים</li></ul>
+    </div>
+    <div class="plan featured">
+      <div class="badge">הכי פופולרי</div>
+      <div class="price">₪179 <span style="font-size:12px;color:var(--text2);font-weight:400;">/חודש</span></div>
+      <div style="font-weight:600;">Active</div>
+      <ul><li>8-10 פעילויות בחודש</li><li>גישה לכל הספקים</li><li>ביטול גמיש</li></ul>
+    </div>
+    <div class="plan">
+      <div class="price">₪289 <span style="font-size:12px;color:var(--text2);font-weight:400;">/חודש</span></div>
+      <div style="font-weight:600;">Unlimited+</div>
+      <ul><li>ללא הגבלת פעילויות</li><li>עדיפות בהרשמה</li><li>הזמנת חבר פעם בחודש</li></ul>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen" id="profile">
+    <h1>הפרופיל שלי</h1>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div class="avatar">נל</div>
+      <div>
+        <div style="font-weight:600;font-size:15px;">נועה לוי</div>
+        <div style="font-size:12px;color:var(--text2);">מנוי Active · מאז ינואר 2026</div>
+      </div>
+    </div>
+    <h2>רצף פעילות</h2>
+    <div class="card" style="justify-content:flex-start;gap:14px;">
+      <div style="font-size:24px;">🔥</div>
+      <div>
+        <div class="name">רצף של 6 שבועות</div>
+        <div class="meta">עוד שיעור אחד השבוע לשמירה על הרצף</div>
+      </div>
+    </div>
+    <h2>פרטי חשבון</h2>
+    <div class="row"><span style="color:var(--text2)">אימייל</span><span>noa@example.com</span></div>
+    <div class="row"><span style="color:var(--text2)">אמצעי תשלום</span><span>Visa •••• 4821</span></div>
+    <div class="row"><span style="color:var(--text2)">תוכנית</span><span>Active - ₪179/חודש</span></div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab active" data-tab="home" onclick="showTab('home')"><span class="ic">🏠</span>בית</button>
+    <button class="tab" data-tab="bookings" onclick="showTab('bookings')"><span class="ic">📅</span>הפעילויות שלי</button>
+    <button class="tab" data-tab="plans" onclick="showTab('plans')"><span class="ic">💳</span>מסלולים</button>
+    <button class="tab" data-tab="profile" onclick="showTab('profile')"><span class="ic">👤</span>פרופיל</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+let quota = {used:3, total:8};
+const activities = [
+  {id:1, name:'יוגה זרימה - סטודיו נאדה', time:'18:30', dist:'400 מטר', spots:'3 מקומות', cat:'יוגה'},
+  {id:2, name:'אימון כוח - Iron Gym', time:'19:00', dist:'800 מטר', spots:'כניסה חופשית', cat:'חדר כושר'},
+  {id:3, name:'פילאטיס מכשירים - Core Studio', time:'20:00', dist:'1.2 ק"מ', spots:'2 מקומות', cat:'פילאטיס'},
+  {id:4, name:'יוגה בוקר - Studio Lotus', time:'07:00 (מחר)', dist:'650 מטר', spots:'5 מקומות', cat:'יוגה'},
+  {id:5, name:'HIIT קבוצתי - PowerBox', time:'18:00', dist:'1.5 ק"מ', spots:'4 מקומות', cat:'חדר כושר'},
+];
+let bookings = [];
+let currentFilter = 'הכל';
+
+function renderQuota(){
+  const left = quota.total - quota.used;
+  document.getElementById('quotaText').textContent = `נשארו לך ${left} מתוך ${quota.total} פעילויות`;
+  document.getElementById('quotaRing').textContent = `${left}/${quota.total}`;
+}
+
+function renderActivities(){
+  const list = document.getElementById('activityList');
+  const filtered = currentFilter === 'הכל' ? activities : activities.filter(a=>a.cat===currentFilter);
+  list.innerHTML = '';
+  if(filtered.length===0){
+    list.innerHTML = '<div class="empty">אין פעילויות זמינות בסינון הזה כרגע</div>';
+    return;
+  }
+  filtered.forEach(a=>{
+    const already = bookings.find(b=>b.id===a.id);
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<div><div class="name">${a.name}</div><div class="meta">${a.time} · ${a.dist} · ${a.spots}</div></div>
+      <button class="btn ${already?'ghost':'primary'}" ${already?'disabled':''} onclick="book(${a.id})">${already?'נרשמת ✓':'הרשמה'}</button>`;
+    list.appendChild(div);
+  });
+}
+
+function renderBookings(){
+  const list = document.getElementById('bookingList');
+  list.innerHTML = '';
+  if(bookings.length===0){
+    list.innerHTML = '<div class="empty">עדיין לא נרשמת לאף פעילות.<br>עבור למסך הבית כדי לבחור פעילות.</div>';
+    return;
+  }
+  bookings.forEach(a=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<div><div class="name">${a.name}</div><div class="meta">${a.time} · ${a.dist}</div></div>
+      <button class="btn danger" onclick="cancelBooking(${a.id})">ביטול</button>`;
+    list.appendChild(div);
+  });
+}
+
+function book(id){
+  if(quota.used >= quota.total){
+    showToast('המכסה החודשית שלך נוצלה במלואה');
+    return;
+  }
+  const a = activities.find(x=>x.id===id);
+  if(bookings.find(b=>b.id===id)) return;
+  bookings.push(a);
+  quota.used++;
+  renderQuota();
+  renderActivities();
+  showToast('נרשמת בהצלחה! התשלום לספק בוצע אוטומטית');
+}
+
+function cancelBooking(id){
+  bookings = bookings.filter(b=>b.id!==id);
+  quota.used = Math.max(0, quota.used-1);
+  renderQuota();
+  renderActivities();
+  renderBookings();
+  showToast('הפעילות בוטלה, המכסה עודכנה');
+}
+
+function filterChip(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  currentFilter = el.textContent;
+  renderActivities();
+}
+
+function showTab(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  if(name==='bookings') renderBookings();
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+renderQuota();
+renderActivities();
+</script>
+</body>
+</html>
